@@ -1,0 +1,38 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-aws-secrets
+  namespace: app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-aws-secrets
+  template:
+    metadata:
+      labels:
+        app: test-aws-secrets
+    spec:
+      serviceAccountName: secret-manager-service-account
+      containers:
+      - name: test-aws-secrets
+        image: busybox
+        command: [ "/bin/sh", "-c", "while true; do echo $RDS_PASSWORD; sleep 10; done" ]
+        volumeMounts:
+        - name: my-secrets
+          mountPath: /mnt/my-secrets
+          readOnly: true
+        env:
+        - name: RDS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: rds-password
+              key: rds_pwd
+      volumes:
+      - name: my-secrets
+        csi:
+          driver: secrets-store.csi.k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: aws-secrets
