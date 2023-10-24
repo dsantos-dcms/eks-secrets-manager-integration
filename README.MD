@@ -64,7 +64,7 @@ metadata:
 
 **6 - Deploy the resources on the manifest folder**
 
-** 7 - You can test if the password has been sucesfully pulled from AWS by looking at the logs from the pods or decoding the K8Ssecret Object**
+**7 - You can test if the password has been sucesfully pulled from AWS by looking at the logs from the pods or decoding the K8Ssecret Object**
 
     kubectl get secret rds-password -n app -o=jsonpath='{.data.rds_pwd}' | base64 --decode 
     k logs pod -n namespace
