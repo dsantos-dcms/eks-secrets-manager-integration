@@ -60,7 +60,6 @@ metadata:
 
     eksctl get iamserviceaccount --region $REGION --cluster $CLUSTERNAME --name aws-sm-customera
 	
-
 **5 - Install the Secrets Store CSI Driver and Provider by following the steps on Secrets Store CSI Driver.MD and Secrets Store CSI Provider.MD**
 
 **6 - Deploy the resources on the manifest folder**
