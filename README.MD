@@ -1,40 +1,52 @@
-## Pre Requisites
+### How to integrate AWS Secrets Manager with EKS
 
-## Create an OIDC Identity Provider - Allow Kubernetes (EKS) service accounts to assume IAM roles, This is a common use case
-## where an OIDC provider for EKS is used to grant specific permissions to pods within the cluster.
+#### Pre requisites
 
-## 1 - Create or associate OIDC Identity Provider to the cluster
-eksctl utils associate-iam-oidc-provider --region="$REGION" --cluster="$CLUSTERNAME" --approve
+Create an OIDC Identity Provider to Allow Kubernetes (EKS) service accounts to assume IAM roles. 
 
-## 2 -  Create a policy to allow READ SECRETS as per Below
+**1 - Create or associate OIDC Identity Provider to the cluster**
+
+    eksctl utils associate-iam-oidc-provider --region="$REGION" --cluster="$CLUSTERNAME" --approve
+
+**2 -  Create a policy to allow read secrets**
+```json
 {
     "Version": "2012-10-17",
     "Statement": [
         {
             "Effect": "Allow",
-            "Action": ["secretsmanager:GetSecretValue", "secretsmanager:DescribeSecret"],
+            "Action": ["secretsmanager:GetSecretValue", 
+                       "secretsmanager:DescribeSecret"],
             "Resource": "*"
         }
     ]
 }
-# or Granular (Specify Secret ARN)
+```
+**or Granular (Specify Secret ARN)**
+```json
 {
     "Version": "2012-10-17",
     "Statement": [
         {
             "Effect": "Allow",
-            "Action": ["secretsmanager:GetSecretValue", "secretsmanager:DescribeSecret"],
+            "Action": ["secretsmanager:GetSecretValue", 
+               "secretsmanager:DescribeSecret"],
             "Resource": ["arn:aws:secretsmanager:ca-central-1:292384479065:secret:customer-a-mR9HPa"]
         }
     ]
 }
+```
 
-## 3 - Create the CLUSTER IAM EKS ServiceAccount and associate the policy with it
+**3 - Create the CLUSTER IAM EKS ServiceAccount and associate the policy 
+**
 
-eksctl create iamserviceaccount --name secret-manager-service-account --region "ca-central-1" --cluster "eks-dsantos" --attach-policy-arn "arn:aws:iam::292384479065:policy/EKSSecretsManagerPolicy" --approve --override-existing-serviceaccounts
+    eksctl create iamserviceaccount --name secret-manager-service-account --region "$REGION" --cluster "$CLUSTERNAME" --attach-policy-arn "policyarn" --approve --override-existing-serviceaccounts
 
-# Alternatively you can also create a role manually via AWS console or terraform and add the service account via YAML referecing the role ARN.
+
+**Alternatively you can create the role manually via AWS console or terraform and add the service account via YAML referecing the role ARN**
+
 ---
+```yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -43,15 +55,18 @@ metadata:
   annotations:
     # Replace with the updated arn role
     eks.amazonaws.com/role-arn: arn:aws:iam::292384479065:role/eks-secret-manager-role
+```
 
-## 4 - Confirm the iamserviceaccount creation | If created by EKSCTL
-eksctl get iamserviceaccount --region ca-central-1 --cluster eks-dsantos --name aws-sm-customera
+**4 - Confirm the iamserviceaccount creation | If created by EKSCTL**
 
-## 5 - Install the Secrets Store CSI Driver and Provider by following the steps on Secrets Store CSI Driver.MD and Secrets Store CSI Provider.MD
+    eksctl get iamserviceaccount --region $REGION --cluster $CLUSTERNAME --name aws-sm-customera
+	
 
-## 6 - Deploy the resources on the manifest folder
+**5 - Install the Secrets Store CSI Driver and Provider by following the steps on Secrets Store CSI Driver.MD and Secrets Store CSI Provider.MD**
 
-## 7 - You can test if the password has been sucesfully pulled from AWS by looking at the logs from the pods or decoding the K8Ssecret Object
-- kubectl get secret rds-password -n app -o=jsonpath='{.data.rds_pwd}' | base64 --decode 
-- k logs pod -n namespace
+**6 - Deploy the resources on the manifest folder**
 
+** 7 - You can test if the password has been sucesfully pulled from AWS by looking at the logs from the pods or decoding the K8Ssecret Object**
+
+    kubectl get secret rds-password -n app -o=jsonpath='{.data.rds_pwd}' | base64 --decode 
+    k logs pod -n namespace
