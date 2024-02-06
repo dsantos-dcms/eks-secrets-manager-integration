@@ -44,6 +44,11 @@ Create an OIDC Identity Provider to Allow Kubernetes (EKS) service accounts to a
 
 **Alternatively you can create the role manually via AWS console or terraform and add the service account via YAML referecing the role ARN**
 
+Creating via console:
+AWS > Create new Role > Role for Web Identity > Choose the OIDC associated with the cluster > Assign the Policy created
+
+Then create the service account manually via yaml manifest file:
+
 ---
 ```yaml
 apiVersion: v1
