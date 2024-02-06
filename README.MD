@@ -37,7 +37,7 @@ Create an OIDC Identity Provider to Allow Kubernetes (EKS) service accounts to a
 }
 ```
 
-**3 - Create the CLUSTER IAM EKS ServiceAccount and associate the policy**
+**3 - Create the IAM Role and Kubernetes ServiceAccount and associate the policy**
 
     eksctl create iamserviceaccount --name secret-manager-service-account --region "$REGION" --cluster "$CLUSTERNAME" --attach-policy-arn "policyarn" --approve --override-existing-serviceaccounts
 
